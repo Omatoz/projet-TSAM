@@ -1,9 +1,5 @@
-/* ==========================================================================
-   voyagevista/css/auth.css — Vue Connexion Sécurisée et Alignée
-   ========================================================================== */
-
 .auth-page-wrapper {
-    min-height: 80vh; /* Conservé de ton code */
+    min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -11,7 +7,7 @@
 }
 
 .auth-card-strict {
-    max-width: 28rem; /* Conservé de ton code */
+    max-width: 28rem;
     width: 100%;
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
@@ -36,14 +32,13 @@
     margin-bottom: 1.5rem;
 }
 
-/* --- FORMULAIRE CORRIGÉ EN COLONNE STRICTE --- */
+/* formulaire d'authentification */
 .auth-form-vertical {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem; /* Crée l'espace géométrique parfait entre les lignes */
+    gap: 1.25rem;
 }
 
-/* On utilise l'architecture bloc de saisie existante de ton code */
 .champ-saisie-auth {
     background-color: #f9fafb;
     padding: 0.75rem;
@@ -70,7 +65,6 @@
     color: #1e293b;
 }
 
-/* Le bouton de validation prend la couleur d'action primaire */
 .btn-auth-submit {
     background-color: #4f46e5;
     color: #ffffff;
@@ -85,7 +79,6 @@
 }
 .btn-auth-submit:hover { background-color: #4338ca; }
 
-/* Zone inférieure de redirection */
 .auth-footer-box {
     text-align: center; 
     margin-top: 1.5rem; 
@@ -101,7 +94,6 @@
     color: #9ca3af;
 }
 
-/* Correction du lien : pas de soulignement au repos, s'affiche uniquement au hover */
 .auth-link-action {
     color: #4f46e5; 
     font-weight: 800;

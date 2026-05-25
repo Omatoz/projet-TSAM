@@ -1,5 +1,5 @@
 /* ==========================================================================
-   voyagevista/css/home.css — Vue Accueil, Filtres et Catalogue Composite
+   voyagevista/css/index.css — Vue Accueil, Filtres et Catalogue Composite
    ========================================================================== */
 
 /* --- SECTION RECHERCHE --- */
@@ -70,6 +70,12 @@
     color: #1e293b;
 }
 
+/* Ajustement spécifique pour le calendrier natif HTML5 */
+.champ-saisie-bloc input[type="date"] {
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+}
+
 .btn-submit-recherche {
     background-color: #4f46e5;
     color: #ffffff;
@@ -85,6 +91,7 @@
     transition: background-color 0.2s;
 }
 .btn-submit-recherche:hover { background-color: #4338ca; }
+
 
 /* --- BARRE DE FILTRES --- */
 .filter-section {
@@ -131,6 +138,7 @@
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
+
 .btn-categorie-rond.inactif { background-color: #f3f4f6; color: #4b5563; }
 .btn-categorie-rond.actif, .btn-categorie-rond:hover {
     background-color: #4f46e5;
@@ -147,6 +155,7 @@
     transition: color 0.2s;
 }
 .filter-item:hover .filter-text, .filter-item.active .filter-text { color: #0f172a; }
+
 
 /* --- GRILLE DE CONTENU PRINCIPALE --- */
 .main-content-section {
@@ -187,6 +196,7 @@
 }
 @media (min-width: 768px) { .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
+/* Fiches / Briques de voyage */
 .bloc-card {
     background-color: #ffffff;
     border: 1px solid #e5e7eb;
@@ -204,8 +214,9 @@
     position: relative;
     border: 1px solid #f3f4f6;
 }
-.bg-bali { background-color: #10b981; }
-.bg-transport { background-color: #0ea5e9; }
+
+.bg-bali { background-color: #10b981; } 
+.bg-transport { background-color: #0ea5e9; } 
 
 .price-badge {
     position: absolute;
@@ -266,9 +277,10 @@
     padding: 0.625rem 0;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 .btn-action-bloc:hover { background-color: #4f46e5; }
+
 
 /* --- COLONNE PANIER / ITINÉRAIRE --- */
 .panier-container {
@@ -354,6 +366,13 @@
     margin-top: 1rem;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 .btn-panier-main:hover { background-color: #4f46e5; }
+
+/* Gestion de l'état désactivé du bouton de validation si itinéraire vide */
+.btn-panier-main:disabled {
+    background-color: #9ca3af !important;
+    cursor: not-allowed;
+    opacity: 0.5;
+}

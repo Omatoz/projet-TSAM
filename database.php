@@ -2,7 +2,7 @@
 $host = "localhost";
 $db_name = "voyagevista";
 $username = "root";
-$password = "root"; // Sur MAMP Windows ou Mac, le mot de passe par défaut est souvent root
+$password = "root";
 $conn = null;
 
 try {

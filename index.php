@@ -1,14 +1,18 @@
 <?php 
-include 'header.php'; 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+include 'header.php'; 
 include 'database.php';
 
 $briquesBDD = [];
 
-// récupération des briques de voyage depuis MySQL via $conn
+// Récupération des briques de voyage depuis MySQL via $conn
 if ($conn !== null) {
     try {
-        $requete = $conn->query("SELECT * FROM briques_voyage ORDER BY id ASC");
+        // Extraction uniquement des destinations pour la première page
+        $requete = $conn->query("SELECT * FROM briques_voyage WHERE type_brique = 'destination' ORDER BY id ASC");
         $briquesBDD = $requete->fetchAll(PDO::FETCH_ASSOC);
     } catch(PDOException $exception) {
         echo "<div style='color:red; font-weight:bold; padding:1rem;'>Erreur lors de la récupération des briques : " . $exception->getMessage() . "</div>";
@@ -93,8 +97,7 @@ if ($conn !== null) {
             <div class="panier-container">
                 <p class="panier-sub" id="panier-statut">0 brique sélectionnée</p>
                 
-                <div class="panier-items-list" id="panier-contenu">
-                    </div>
+                <div class="panier-items-list" id="panier-contenu"></div>
 
                 <div class="panier-total-row">
                     <span class="total-label">Prix total estimé</span>
@@ -108,73 +111,46 @@ if ($conn !== null) {
 </section>
 
 <script>
-// Récupération sécurisée du catalogue PHP issu de MySQL
 const voyagesData = <?php echo json_encode($briquesBDD); ?>;
-
-// État de l'application (Le panier commence VIDE au chargement)
 let panier = [];
 let categorieActuelle = "tous";
 
-// Éléments du DOM (HTML)
 const catalogueContainer = document.getElementById('catalogue-voyages');
 const panierContenu = document.getElementById('panier-contenu');
 const panierTotal = document.getElementById('panier-total');
 const panierStatut = document.getElementById('panier-statut');
 const btnValiderPanier = document.getElementById('btn-valider-panier');
 
-// Fonction pour afficher les cartes du catalogue selon les filtres
 function afficherCatalogue() {
     catalogueContainer.innerHTML = ""; 
-    
-    // Récupération des valeurs des filtres de saisie
     const texteRecherche = document.getElementById('search-destination').value.toLowerCase();
     const filtreTransport = document.getElementById('search-transport').value;
 
-    // Filtrage croisé des données reçues de MySQL
     const voyagesFiltrés = voyagesData.filter(v => {
-        // Vérification si la catégorie sélectionnée est dans la liste de la brique (séparée par des virgules)
-        const matchCategorie = (categorieActuelle === "tous" || v.categorie.split(',').includes(categorieActuelle));
+        const matchCategorie = (categorieActuelle === "tous" || (v.categorie && v.categorie.split(',').includes(categorieActuelle)));
+        const matchTexte = v.titre.toLowerCase().includes(texteRecherche) || v.description.toLowerCase().includes(texteRecherche);
         
-        // Filtrage textuel (titre ou description)
-        const matchTexte = v.titre.toLowerCase().includes(texteRecherche) || 
-                             v.description.toLowerCase().includes(texteRecherche);
-        
-        // Filtrage par transport basé sur le contenu textuel de la brique
         let matchTransport = true;
         if (filtreTransport !== "tous") {
-            matchTransport = v.titre.toLowerCase().includes(filtreTransport) || 
-                             v.description.toLowerCase().includes(filtreTransport);
+            matchTransport = v.titre.toLowerCase().includes(filtreTransport) || v.description.toLowerCase().includes(filtreTransport);
         }
                              
         return matchCategorie && matchTexte && matchTransport;
     });
 
-    // Gestion du cas où aucun voyage ne correspond aux critères
     if (voyagesFiltrés.length === 0) {
         catalogueContainer.innerHTML = "<p style='font-size: 0.875rem; color:#6b7280; font-weight:700; text-transform:uppercase;'>Aucune brique ne correspond à vos critères.</p>";
         return;
     }
 
-    // 4. BOUCLE DE GÉNÉRATION DES CARTES
     voyagesFiltrés.forEach(voyage => {
         const estDansLePanier = panier.some(item => item.id === voyage.id);
         const prixEntier = Math.round(voyage.prix);
         
-        // Gestion de l'affichage de l'image Pinterest ou de la couleur de secours
-        let visuelHtml = '';
-        if (voyage.image_url) {
-            // Si une image est présente en Base de Données
-            visuelHtml = `<div class="placeholder-image-bloc" style="background-image: url('${voyage.image_url}'); background-size: cover; background-position: center;">
-                            <span class="price-badge">${prixEntier} €</span>
-                          </div>`;
-        } else {
-            // Fallback : si pas d'image, on applique la couleur unie CSS par défaut
-            visuelHtml = `<div class="placeholder-image-bloc ${voyage.couleur_css || 'bg-bali'}">
-                            <span class="price-badge">${prixEntier} €</span>
-                          </div>`;
-        }
+        let visuelHtml = voyage.image_url 
+            ? `<div class="placeholder-image-bloc" style="background-image: url('${voyage.image_url}'); background-size: cover; background-position: center;"><span class="price-badge">${prixEntier} €</span></div>`
+            : `<div class="placeholder-image-bloc ${voyage.couleur_css || 'bg-bali'}"><span class="price-badge">${prixEntier} €</span></div>`;
 
-        // Structure HTML finale de la carte de voyage
         const cardHtml = `
             <div class="bloc-card">
                 ${visuelHtml}
@@ -187,39 +163,30 @@ function afficherCatalogue() {
                 </button>
             </div>
         `;
-        
-        // Injection de la carte dans le container HTML
         catalogueContainer.insertAdjacentHTML('beforeend', cardHtml);
     });
 }
 
-// 5. Ajouter un élément au panier
 window.ajouterAuPanier = function(id) {
     const voyageSelectionne = voyagesData.find(v => v.id == id);
-    if (voyageSelectionne && !panier.some(item => item.id == id)) {
-        panier.push(voyageSelectionne);
+    if (voyageSelectionne) {
+        // Règle : On ne prend qu'une seule destination sur la page d'accueil
+        panier = [voyageSelectionne];
         mettreAJourPanier();
         afficherCatalogue();
     }
 }
 
-// Retirer un élément du panier
 window.retirerDuPanier = function(id) {
-    panier = panier.filter(item => item.id != id);
+    panier = [];
     mettreAJourPanier();
     afficherCatalogue();
 }
 
-// Mise à jour visuelle du panier
 function mettreAJourPanier() {
     panierContenu.innerHTML = ""; 
-    
     if (panier.length === 0) {
-        panierContenu.innerHTML = `
-            <div style="text-align:center; padding:2rem 0; color:#9ca3af; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
-                Votre itinéraire est vide.<br>Sélectionnez des briques à gauche.
-            </div>
-        `;
+        panierContenu.innerHTML = `<div style="text-align:center; padding:2rem 0; color:#9ca3af; font-size:0.75rem; font-weight:700; text-transform:uppercase;">Votre itinéraire est vide.<br>Sélectionnez une brique.</div>`;
         panierTotal.textContent = "0 €";
         panierStatut.textContent = "0 brique sélectionnée";
         btnValiderPanier.disabled = true;
@@ -235,7 +202,7 @@ function mettreAJourPanier() {
             <div class="panier-item-row">
                 <div>
                     <p class="panier-item-name">${item.titre}</p>
-                    <span class="panier-item-type" style="text-transform:uppercase;">Brique ${item.type_brique || 'Option'}</span>
+                    <span class="panier-item-type" style="text-transform:uppercase;">Destination Principale</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                     <span class="panier-item-price">${prixItem} €</span>
@@ -247,11 +214,39 @@ function mettreAJourPanier() {
     });
 
     panierTotal.textContent = total + " €";
-    panierStatut.textContent = `${panier.length} brique${panier.length > 1 ? 's' : ''} configurée${panier.length > 1 ? 's' : ''}`;
+    panierStatut.textContent = `${panier.length} brique configurée`;
     btnValiderPanier.disabled = false;
 }
 
-// Événements sur les boutons de catégories
+btnValiderPanier.addEventListener('click', async () => {
+    if (panier.length === 0) return;
+
+    btnValiderPanier.textContent = "Initialisation de l'itinéraire...";
+    btnValiderPanier.disabled = true;
+
+    try {
+        // ACTION MAJEURE : On vide d'abord complètement l'ancienne session pour écraser les restes des anciens voyages
+        await fetch('stockage.php?action=retirer&id=all');
+        
+        // On enregistre la nouvelle destination unique
+        const reponse = await fetch(`stockage.php?action=ajouter&id=${panier[0].id}`);
+        const data = await reponse.json();
+        
+        if (data.status === 'success') {
+            window.location.href = "transport.php"; 
+        } else {
+            alert("Erreur lors du stockage.");
+            btnValiderPanier.textContent = "Voir tout mon itinéraire";
+            btnValiderPanier.disabled = false;
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur réseau.");
+        btnValiderPanier.textContent = "Voir tout mon itinéraire";
+        btnValiderPanier.disabled = false;
+    }
+});
+
 document.querySelectorAll('.btn-categorie-rond').forEach(bouton => {
     bouton.addEventListener('click', () => {
         document.querySelectorAll('.btn-categorie-rond').forEach(b => {
@@ -267,8 +262,6 @@ document.querySelectorAll('.btn-categorie-rond').forEach(bouton => {
 });
 
 document.getElementById('btn-filtrer-recherche').addEventListener('click', afficherCatalogue);
-
-// Chargement Initial
 afficherCatalogue();
 mettreAJourPanier();
 </script>

@@ -1,4 +1,6 @@
 <?php
+session_start(); 
+
 $host = "localhost";
 $db_name = "voyagevista";
 $username = "root";

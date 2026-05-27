@@ -18,9 +18,9 @@
 
             <nav class="nav-menu">
                 <a href="index.php" class="nav-link active">Destinations</a>
-                <a href="#" class="nav-link">Hebergements</a>
-                <a href="#" class="nav-link">Activités</a>
-                <a href="#" class="nav-link">Transport</a>
+                <a href="index.php" class="nav-link">Hebergements</a>
+                <a href="index.php" class="nav-link">Activités</a>
+                <a href="index.php" class="nav-link">Transport</a>
             </nav>
 
             <a href="auth.php" class="btn-espace-client">

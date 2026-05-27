@@ -30,7 +30,7 @@ include 'header.php';
 
         <div class="auth-footer-box">
             <p class="auth-meta-text">
-                Pas encore enregistré ? <a href="#" class="auth-link-action">Créer un compte</a>
+                Pas encore enregistré ? <a href="inscription.php" class="auth-link-action">Créer un compte</a>
             </p>
         </div>
     </div>
